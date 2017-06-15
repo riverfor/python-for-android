@@ -10,3 +10,5 @@ APP_MODULES := application sdl sdl_main tremor png jpeg freetype sdl_ttf sdl_ima
 APP_ABI := $(ARCH)
 APP_STL := gnustl_static
 APP_CFLAGS += $(OFLAG)
+APP_ALLOW_MISSING_DEPS=true
+NDK_TOOLCHAIN_VERSION=4.9

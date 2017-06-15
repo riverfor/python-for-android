@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 
 VERSION_pyjnius=${VERSION_pyjnius:-master}
 URL_pyjnius=https://github.com/kivy/pyjnius/archive/$VERSION_pyjnius.zip

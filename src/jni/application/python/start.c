@@ -47,10 +47,16 @@ int main(int argc, char **argv) {
 
     char *env_argument = NULL;
     int ret = 0;
+    char *pri_argument = NULL;
+	char *main_py      = NULL;
+
     FILE *fd;
 
     LOG("Initialize Python for Android");
     env_argument = getenv("ANDROID_ARGUMENT");
+    pri_argument = getenv("ANDROID_PRIVATE");
+    main_py      = getenv("ANDROID_SCRIPT");
+
     setenv("ANDROID_APP_PATH", env_argument, 1);
 	//setenv("PYTHONVERBOSE", "2", 1);
     Py_SetProgramName(argv[0]);
@@ -70,14 +76,18 @@ int main(int argc, char **argv) {
      */
     PyRun_SimpleString(
         "import sys, posix\n" \
+        "sys.platform='linux2'\n" \
         "private = posix.environ['ANDROID_PRIVATE']\n" \
-        "argument = posix.environ['ANDROID_ARGUMENT']\n" \
+        "public = posix.environ['ANDROID_PUBLIC']\n" \
+        "project = posix.environ['ANDROID_ARGUMENT']\n" \
+        "logfile = '%s/last.log' % (project,)\n" \
         "sys.path[:] = [ \n" \
 		"    private + '/lib/python27.zip', \n" \
 		"    private + '/lib/python2.7/', \n" \
 		"    private + '/lib/python2.7/lib-dynload/', \n" \
 		"    private + '/lib/python2.7/site-packages/', \n" \
-		"    argument ]\n" \
+		"    public  + '/lib/python2.7/site-packages/', \n" \
+		"    project ]\n" \
         "import androidembed\n" \
         "class LogFile(object):\n" \
         "    def __init__(self):\n" \
@@ -85,15 +95,21 @@ int main(int argc, char **argv) {
         "    def write(self, s):\n" \
         "        s = self.buffer + s\n" \
         "        lines = s.split(\"\\n\")\n" \
+        "        output = open(logfile,\"a\")\n" \
+
         "        for l in lines[:-1]:\n" \
         "            androidembed.log(l)\n" \
+        "            output.write(\"%s\\n\" % (l,))\n" \
+        "        output.close()\n" \
         "        self.buffer = lines[-1]\n" \
         "    def flush(self):\n" \
         "        return\n" \
         "sys.stdout = sys.stderr = LogFile()\n" \
-		"import site; print site.getsitepackages()\n"\
-		"print 'Android path', sys.path\n" \
-        "print 'Android kivy bootstrap done. __name__ is', __name__");
+		"import site; import time #site.getsitepackages()\n"\
+        "#print '# QPython start: %s' % time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time()))\n"\
+		"#print 'Android path', sys.path\n" \
+        "#print '#Log path', logfile\n" \
+        "#print 'Android kivy bootstrap done. __name__ is', __name__");
 
     /* run it !
      */
@@ -102,22 +118,19 @@ int main(int argc, char **argv) {
 
 	/* search the initial main.py
 	 */
-	char *main_py = "main.pyo";
-	if ( file_exists(main_py) == 0 ) {
-		if ( file_exists("main.py") )
-			main_py = "main.py";
-		else
-			main_py = NULL;
-	}
+    if ( file_exists(main_py)) {
+    } else {
+        main_py = NULL;
+    }
 
 	if ( main_py == NULL ) {
-		LOG("No main.pyo / main.py found.");
+		LOG("Project's main.py not found.");
 		return -1;
 	}
 
     fd = fopen(main_py, "r");
     if ( fd == NULL ) {
-        LOG("Open the main.py(o) failed");
+        LOG("Open the main.py failed");
         return -1;
     }
 
@@ -132,10 +145,13 @@ int main(int argc, char **argv) {
 			PyErr_Clear();
     }
 
+    fclose(fd);
     /* close everything
      */
+    PyRun_SimpleString("is_project = posix.environ['IS_PROJECT']\n" \
+                        "print ''\nimport sys\nif is_project=='1': sys.exit()\n");
+
 	Py_Finalize();
-    fclose(fd);
 
     LOG("Python for android ended.");
     return ret;

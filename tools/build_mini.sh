@@ -1,0 +1,3 @@
+#!/bin/sh
+./distribute.sh -m "openssl sqlite3 pil audiostream kivy android jpeg png pyjnius"
+#./distribute.sh -m "android apsw audiostream bidi boost cherrypy c_igraph cprotobuf cymunk django docutils ecdsa enum34 evdev ffmpeg ffmpeg2 ffpyplayer freetype gevent greenlet harfbuzz hostpython igraph jpeg kivent_core kivent_cymunk kivy leveldb libevent libpq libsodium libswift libtorrent libxml2 libxslt libyaml lxml m2crypto midistream msgpack mysql_connector netifaces numpy opencv openssl paramiko pil plyer plyvel png polygon protobuf psutil psycopg2 pyasn1 pycrypto pygame pyjnius pylibpd pyopenssl pyparsing pyqrcode python pyyaml sdl setuptools six sqlalchemy sqlite3 storm swift thrift tkinter twisted txws wokkel zeroconf zope"
